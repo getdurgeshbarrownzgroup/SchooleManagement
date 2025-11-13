@@ -1,0 +1,64 @@
+﻿create database schl1
+
+use schl1
+CREATE TABLE Teachers (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    FirstName NVARCHAR(50) NOT NULL,
+    LastName NVARCHAR(50) NOT NULL,
+    Email NVARCHAR(100) NOT NULL UNIQUE,
+    Subject NVARCHAR(100)
+);
+
+CREATE TABLE Courses (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    CourseName NVARCHAR(100) NOT NULL,
+    Description NVARCHAR(255)
+);
+
+
+
+CREATE TABLE Students (
+    Id UNIQUEIDENTIFIER PRIMARY KEY DEFAULT NEWID(),
+    FirstName NVARCHAR(50) NOT NULL,
+    LastName NVARCHAR(50) NOT NULL,
+    Email NVARCHAR(100) NOT NULL UNIQUE,
+    DateOfBirth DATE NOT NULL,
+    AssignedTeacherId UNIQUEIDENTIFIER NULL,
+    AssignedCourseId UNIQUEIDENTIFIER NULL,
+    FOREIGN KEY (AssignedTeacherId) REFERENCES Teachers(Id),
+    FOREIGN KEY (AssignedCourseId) REFERENCES Courses(Id)
+);
+
+
+
+-- Insert 100 Teachers
+INSERT INTO Teachers (FirstName, LastName, Email, Subject)
+SELECT TOP 100
+    LEFT(FirstName, 20),
+    LEFT(LastName, 20),
+    LOWER(FirstName + '.' + LastName + CAST(ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS NVARCHAR(10)) + '@school.in'),
+    CASE (ABS(CHECKSUM(NEWID())) % 6)
+        WHEN 0 THEN 'Mathematics'
+        WHEN 1 THEN 'Physics'
+        WHEN 2 THEN 'Chemistry'
+        WHEN 3 THEN 'English'
+        WHEN 4 THEN 'Computer Science'
+        ELSE 'Biology'
+    END
+FROM (
+    VALUES
+    ('Aarav', 'Patel'), ('Vivaan', 'Sharma'), ('Aditya', 'Gupta'), ('Arjun', 'Mehta'), ('Krishna', 'Reddy'),
+    ('Diya', 'Nair'), ('Ananya', 'Singh'), ('Isha', 'Kumar'), ('Aanya', 'Chopra'), ('Riya', 'Verma')
+) AS Names(FirstName, LastName)
+CROSS JOIN (SELECT TOP 10 ROW_NUMBER() OVER (ORDER BY (SELECT NULL)) AS n FROM sys.objects) AS X;
+
+
+-- Insert 50 Courses
+INSERT INTO Courses (CourseName, Description)
+VALUES 
+('Mathematics', 'Advanced mathematics concepts'),
+('Physics', 'Mechanics and Thermodynamics'),
+('Chemistry', 'Organic and Inorganic Chemistry'),
+('Biology', 'Cell and Molecular Biology'),
+('English', 'Literature and Grammar'),
+('Computer Science', 'Programming and Data Structures');
